@@ -216,7 +216,6 @@ def download_file(source_id: str, user: dict = Depends(get_current_user)) -> Fil
 def navidrome_auth(user: dict = Depends(get_current_user)) -> Response:
     response = Response(status_code=status.HTTP_204_NO_CONTENT)
     response.headers["X-Navidrome-User"] = user["username"]
-    response.headers["X-Navidrome-Name"] = user["display_name"]
     return response
 
 
