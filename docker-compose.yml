@@ -1,0 +1,70 @@
+services:
+  navidrome:
+    image: deluan/navidrome:latest
+    container_name: musickit_navidrome
+    restart: unless-stopped
+    environment:
+      ND_SCANSCHEDULE: "@every 1m"
+      ND_LOGLEVEL: info
+      ND_BASEURL: /player
+      ND_MUSICFOLDER: /music
+      ND_DATAFOLDER: /data
+      ND_ENABLEUSEREDITING: "false"
+      ND_ENABLEEXTERNALSERVICES: "false"
+      ND_SESSIONTIMEOUT: 24h
+      ND_LASTFM_ENABLED: "false"
+      ND_LISTENBRAINZ_ENABLED: "false"
+      ND_EXTAUTH_TRUSTEDSOURCES: 172.16.0.0/12
+      ND_EXTAUTH_USERHEADER: Remote-User
+    volumes:
+      - ./data/navidrome:/data
+      - ./data/music:/music
+    expose:
+      - "4533"
+    networks:
+      - musickit
+
+  backend:
+    build:
+      context: ./backend
+    container_name: musickit_backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      MUSIC_ROOT: /music
+      APP_DB_PATH: /app/data/app.db
+      NAVIDROME_INTERNAL_URL: http://navidrome:4533
+      NAVIDROME_EXTERNAL_BASE_URL: ${APP_BASE_URL}/player
+      JWT_COOKIE_SECURE: ${JWT_COOKIE_SECURE:-false}
+    volumes:
+      - ./data/music:/music
+      - ./data/backend:/app/data
+    expose:
+      - "8000"
+    networks:
+      - musickit
+    depends_on:
+      - navidrome
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: musickit_nginx
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "${HTTP_PORT:-80}:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./frontend:/usr/share/nginx/html:ro
+      - ./data/music:/music:ro
+    networks:
+      - musickit
+    depends_on:
+      - backend
+      - navidrome
+
+networks:
+  musickit:
+    driver: bridge
