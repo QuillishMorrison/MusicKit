@@ -1,346 +1,98 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>MusicKit</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    :root {
-      --bg: #f7f3ea;
-      --panel: rgba(255, 251, 245, 0.86);
-      --ink: #1e2430;
-      --muted: #596273;
-      --line: rgba(30, 36, 48, 0.12);
-      --accent: #d66b2d;
-      --accent-dark: #9e4317;
-      --ok: #2b7a4b;
-      --shadow: 0 24px 60px rgba(70, 43, 16, 0.12);
-    }
-
-    * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: "Segoe UI", Tahoma, sans-serif;
-      color: var(--ink);
-      background:
-        radial-gradient(circle at top left, rgba(214, 107, 45, 0.16), transparent 28%),
-        radial-gradient(circle at right center, rgba(43, 122, 75, 0.14), transparent 26%),
-        linear-gradient(180deg, #fbf8f2 0%, #efe5d4 100%);
       min-height: 100vh;
+      display: grid;
+      place-items: center;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background: linear-gradient(180deg, #f5efe5 0%, #eadcc7 100%);
+      color: #1f2430;
     }
 
-    .shell {
-      max-width: 980px;
-      margin: 0 auto;
-      padding: 24px 16px 40px;
-    }
-
-    .hero, .panel {
-      background: var(--panel);
-      border: 1px solid var(--line);
+    .card {
+      width: min(420px, calc(100vw - 32px));
+      background: rgba(255, 252, 246, 0.92);
+      border: 1px solid rgba(31, 36, 48, 0.1);
       border-radius: 24px;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(18px);
-    }
-
-    .hero {
       padding: 24px;
-      margin-bottom: 20px;
+      box-shadow: 0 24px 60px rgba(70, 43, 16, 0.12);
     }
 
-    h1, h2, p { margin: 0; }
-    h1 { font-size: 32px; margin-bottom: 10px; }
-    h2 { font-size: 20px; margin-bottom: 12px; }
-    p { color: var(--muted); line-height: 1.45; }
-
-    .toolbar {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
-      margin-top: 18px;
+    h1 {
+      margin: 0 0 10px;
+      font-size: 28px;
     }
 
-    input {
-      width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 14px 16px;
-      font-size: 16px;
-      background: rgba(255, 255, 255, 0.7);
-    }
-
-    button, a.button {
-      border: 0;
-      border-radius: 16px;
-      padding: 14px 18px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.16s ease, opacity 0.16s ease, background 0.16s ease;
-    }
-
-    button:hover, a.button:hover { transform: translateY(-1px); }
-    .primary { background: var(--accent); color: white; }
-    .primary:hover { background: var(--accent-dark); }
-    .secondary {
-      background: rgba(255, 255, 255, 0.6);
-      color: var(--ink);
-      border: 1px solid var(--line);
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1.4fr 1fr;
-      gap: 20px;
-    }
-
-    .panel {
-      padding: 20px;
-      min-height: 280px;
-    }
-
-    .results, .history {
-      display: grid;
-      gap: 12px;
-      margin-top: 12px;
-    }
-
-    .track {
-      display: grid;
-      grid-template-columns: 72px 1fr auto;
-      gap: 12px;
-      align-items: center;
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      padding: 12px;
-      background: rgba(255, 255, 255, 0.68);
-    }
-
-    .track img {
-      width: 72px;
-      height: 72px;
-      object-fit: cover;
-      border-radius: 14px;
-      background: #ddd;
-    }
-
-    .meta strong {
-      display: block;
-      margin-bottom: 4px;
-    }
-
-    .meta span {
-      color: var(--muted);
-      font-size: 14px;
-      display: block;
-    }
-
-    .actions {
-      display: grid;
-      gap: 8px;
+    p {
+      margin: 0;
+      line-height: 1.45;
+      color: #5c6472;
     }
 
     .status {
-      margin-top: 14px;
-      color: var(--ok);
+      margin-top: 16px;
+      color: #2b7a4b;
       min-height: 22px;
     }
 
-    .hint {
-      margin-top: 10px;
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    @media (max-width: 860px) {
-      .grid { grid-template-columns: 1fr; }
-      .toolbar { grid-template-columns: 1fr; }
-      .track { grid-template-columns: 64px 1fr; }
-      .actions { grid-column: 1 / -1; }
+    a {
+      color: #a34a1f;
+      text-decoration: none;
+      font-weight: 600;
     }
   </style>
 </head>
 <body>
-  <div class="shell">
-    <section class="hero">
-      <p id="welcome">Checking Telegram session...</p>
-      <h1>MusicKit</h1>
-      <p>Search YouTube, import tracks into your private library, then open the Navidrome player for likes, playlists, and streaming.</p>
-      <div class="toolbar">
-        <input id="query" type="search" placeholder="Search a song or artist">
-        <button id="searchButton" class="primary">Search</button>
-      </div>
-      <div class="toolbar">
-        <a id="playerLink" class="button secondary" href="/player/" target="_self">Open Player</a>
-        <button id="refreshButton" class="secondary">Refresh Library</button>
-      </div>
-      <div id="status" class="status"></div>
-      <div class="hint">Downloads are saved as MP3 and usually appear in Navidrome within about a minute.</div>
-    </section>
-
-    <div class="grid">
-      <section class="panel">
-        <h2>Search Results</h2>
-        <div id="results" class="results"></div>
-      </section>
-      <section class="panel">
-        <h2>Your Recent Downloads</h2>
-        <div id="history" class="history"></div>
-      </section>
-    </div>
+  <div class="card">
+    <h1>Вход в плеер</h1>
+    <p>Сейчас проверю Telegram-сессию и сразу открою Navidrome.</p>
+    <div id="status" class="status">Авторизация...</div>
+    <p>Если импорт нужен отдельно, он доступен по адресу <a href="/import/">/import/</a>.</p>
   </div>
 
   <script>
-    const tg = window.Telegram?.WebApp;
+    async function start() {
+      const tg = window.Telegram?.WebApp;
+      const status = document.getElementById('status');
 
-    async function api(path, options = {}) {
-      const response = await fetch(`/api${path}`, {
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
-        ...options
-      });
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({ detail: 'Request failed' }));
-        throw new Error(data.detail || 'Request failed');
-      }
-      const contentType = response.headers.get('content-type') || '';
-      return contentType.includes('application/json') ? response.json() : null;
-    }
-
-    function setStatus(text, isError = false) {
-      const el = document.getElementById('status');
-      el.textContent = text;
-      el.style.color = isError ? '#b33030' : 'var(--ok)';
-    }
-
-    function secondsToLabel(seconds) {
-      if (!seconds) return 'Unknown duration';
-      const mins = Math.floor(seconds / 60);
-      const secs = `${seconds % 60}`.padStart(2, '0');
-      return `${mins}:${secs}`;
-    }
-
-    async function ensureAuth() {
       if (!tg?.initData) {
-        throw new Error('Open this page from your Telegram bot so the Mini App auth data is available.');
-      }
-      tg.ready();
-      tg.expand();
-      const me = await api('/auth/telegram', {
-        method: 'POST',
-        body: JSON.stringify({ initData: tg.initData })
-      });
-      document.getElementById('welcome').textContent = `Signed in as ${me.display_name}`;
-      document.getElementById('playerLink').href = me.navidrome_url;
-      return me;
-    }
-
-    function renderHistory(items = []) {
-      const history = document.getElementById('history');
-      if (!items.length) {
-        history.innerHTML = '<p class="hint">No tracks yet. Download something and it will show up here.</p>';
+        status.textContent = 'Открой это приложение именно из Telegram-бота.';
+        status.style.color = '#b33030';
         return;
       }
-      history.innerHTML = items.map(item => `
-        <div class="track">
-          <div class="meta">
-            <strong>${item.title}</strong>
-            <span>${item.artist}</span>
-            <span>${secondsToLabel(item.duration_seconds)}</span>
-          </div>
-          <div class="actions">
-            <a class="button secondary" href="${item.download_url}">Download MP3</a>
-          </div>
-        </div>
-      `).join('');
-    }
 
-    function escapeAttr(value) {
-      return value.replaceAll('&', '&amp;').replaceAll("'", '&#39;');
-    }
-
-    function renderResults(items = []) {
-      const results = document.getElementById('results');
-      if (!items.length) {
-        results.innerHTML = '<p class="hint">Run a search to see tracks here.</p>';
-        return;
-      }
-      results.innerHTML = items.map(item => `
-        <div class="track">
-          <img src="${item.thumbnail_url || ''}" alt="">
-          <div class="meta">
-            <strong>${item.title}</strong>
-            <span>${item.artist}</span>
-            <span>${secondsToLabel(item.duration_seconds)}</span>
-          </div>
-          <div class="actions">
-            <button class="primary" data-download='${escapeAttr(JSON.stringify(item))}'>Download</button>
-          </div>
-        </div>
-      `).join('');
-
-      for (const button of results.querySelectorAll('button[data-download]')) {
-        button.addEventListener('click', async (event) => {
-          const payload = JSON.parse(event.currentTarget.dataset.download);
-          event.currentTarget.disabled = true;
-          event.currentTarget.textContent = 'Downloading...';
-          setStatus(`Downloading ${payload.title}...`);
-          try {
-            const result = await api('/download', {
-              method: 'POST',
-              body: JSON.stringify(payload)
-            });
-            setStatus(`${result.title} is ready. Open Player to stream it or use Download MP3.`);
-            await loadMe();
-          } catch (error) {
-            setStatus(error.message, true);
-          } finally {
-            event.currentTarget.disabled = false;
-            event.currentTarget.textContent = 'Download';
-          }
-        });
-      }
-    }
-
-    async function loadMe() {
-      const me = await api('/me');
-      renderHistory(me.recent_downloads || []);
-      return me;
-    }
-
-    async function runSearch() {
-      const query = document.getElementById('query').value.trim();
-      if (query.length < 2) {
-        setStatus('Enter at least two characters to search.', true);
-        return;
-      }
-      setStatus(`Searching for "${query}"...`);
       try {
-        const results = await api(`/search?q=${encodeURIComponent(query)}`);
-        renderResults(results);
-        setStatus(`Found ${results.length} track(s).`);
+        tg.ready();
+        tg.expand();
+
+        const response = await fetch('/api/auth/telegram', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ initData: tg.initData })
+        });
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(data.detail || 'Не удалось авторизоваться через Telegram');
+        }
+
+        status.textContent = 'Готово, открываю плеер...';
+        window.location.replace(data.navidrome_url || '/player/');
       } catch (error) {
-        setStatus(error.message, true);
+        status.textContent = error.message || 'Ошибка авторизации';
+        status.style.color = '#b33030';
       }
     }
 
-    document.getElementById('searchButton').addEventListener('click', runSearch);
-    document.getElementById('refreshButton').addEventListener('click', loadMe);
-    document.getElementById('query').addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') runSearch();
-    });
-
-    renderResults([]);
-    renderHistory([]);
-
-    ensureAuth()
-      .then(loadMe)
-      .catch((error) => setStatus(error.message, true));
+    start();
   </script>
 </body>
 </html>
